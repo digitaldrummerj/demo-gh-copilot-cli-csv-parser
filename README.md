@@ -35,8 +35,11 @@ This project includes a comprehensive test suite using **Node.js built-in test r
 ### Run Tests
 
 ```bash
-# Run all tests
+# Run all tests (no colors - better for dark backgrounds)
 npm test
+
+# Run tests with colors
+npm run test:color
 
 # Run tests in watch mode
 npm run test:watch
@@ -45,10 +48,13 @@ npm run test:watch
 npm run test:coverage
 ```
 
+### Test Output Directory
+
+Tests write to `output-test/` directory (never to `output/`), ensuring your production data is never affected by test runs.
+
 ### Test Coverage
 
-- ✅ 34 automated tests
-- ✅ 91% pass rate (31/34 passing)
+- ✅ 34 automated tests (100% passing)
 - ✅ All commands tested (parse, diff, headers, clear)
 - ✅ Edge cases and error handling
 - ✅ Integration tests
