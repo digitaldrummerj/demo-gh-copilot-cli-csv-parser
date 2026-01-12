@@ -11,8 +11,19 @@ const {
   readCSVHeaders,
   fileExists,
   countFiles,
-  findBackupFolders
+  findBackupFolders,
+  TEST_OUTPUT_DIR,
+  getTestEnv
 } = require('./helpers');
+
+// Use test output directory
+const OUTPUT_DIR = 'output-test';
+
+// Test exec options with environment
+const testExecOptions = {
+  encoding: 'utf8',
+  env: getTestEnv()
+};
 
 // Test configuration
 const TEST_TIMEOUT = 10000;
@@ -35,18 +46,18 @@ describe('Contact CSV Parser - Parse Command', () => {
 
     assert.ok(output.includes('Parse Summary'));
     assert.ok(output.includes('Total Tags: 3'));
-    assert.ok(await fileExists('output/test-basic/customer.csv'));
-    assert.ok(await fileExists('output/test-basic/prospect.csv'));
-    assert.ok(await fileExists('output/test-basic/vip.csv'));
-    assert.ok(await fileExists('output/test-basic/untagged.csv'));
-    assert.ok(await fileExists('output/test-basic/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/customer.csv'));
+    assert.ok(await fileExists('output-test/test-basic/prospect.csv'));
+    assert.ok(await fileExists('output-test/test-basic/vip.csv'));
+    assert.ok(await fileExists('output-test/test-basic/untagged.csv'));
+    assert.ok(await fileExists('output-test/test-basic/summary.log'));
   });
 
   test('should handle records with multiple tags correctly', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const customerRecords = await readCSV('output/test-basic/customer.csv');
-    const vipRecords = await readCSV('output/test-basic/vip.csv');
+    const customerRecords = await readCSV('output-test/test-basic/customer.csv');
+    const vipRecords = await readCSV('output-test/test-basic/vip.csv');
 
     // Bob has both customer and vip tags
     assert.strictEqual(customerRecords.length, 2); // Alice and Bob
@@ -56,17 +67,17 @@ describe('Contact CSV Parser - Parse Command', () => {
   });
 
   test('should handle untagged records', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const untaggedRecords = await readCSV('output/test-basic/untagged.csv');
+    const untaggedRecords = await readCSV('output-test/test-basic/untagged.csv');
     assert.strictEqual(untaggedRecords.length, 1);
     assert.strictEqual(untaggedRecords[0].Name, 'Diana');
   });
 
   test('should create summary log with correct format', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const summary = await fs.readFile('output/test-basic/summary.log', 'utf8');
+    const summary = await fs.readFile('output-test/test-basic/summary.log', 'utf8');
     assert.ok(summary.includes('Parse Summary'));
     assert.ok(summary.includes('Source File: test/fixtures/test-basic.csv'));
     assert.ok(summary.includes('Tag Column: Tags'));
@@ -80,21 +91,21 @@ describe('Contact CSV Parser - Parse Command', () => {
     const testFile = await createTempTestFile('test-special-chars.csv', 
       'ID,Name,Tags\n1,Test,"my-tag!@#$%"');
 
-    execSync(`node index.js parse ${testFile} Tags`);
-    assert.ok(await fileExists('output/test-special-chars/my_tag_____.csv'));
+    execSync(`node index.js parse ${testFile} Tags`, testExecOptions);
+    assert.ok(await fileExists('output-test/test-special-chars/my_tag_____.csv'));
   });
 
   test('should backup existing files before overwriting', async () => {
     // First run
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     
     // Small delay to ensure different timestamp
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Second run - should create backup
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     assert.ok(backups.length > 0, 'Should create backup folder');
     assert.ok(backups[0].includes('backup_'), 'Backup folder should have correct name');
   });
@@ -106,31 +117,23 @@ describe('Contact CSV Parser - Parse Command', () => {
     );
 
     assert.ok(output.includes('Parse Summary'));
-    assert.ok(await fileExists('output/test-case-sensitive/customer.csv'));
+    assert.ok(await fileExists('output-test/test-case-sensitive/customer.csv'));
   });
 
   test('should error on duplicate tag columns with different casing', async () => {
-    try {
-      execSync('node index.js parse test/fixtures/test-duplicate-columns.csv Tags', {
-        encoding: 'utf8'
-      });
-      assert.fail('Should have thrown error');
-    } catch (error) {
-      const output = error.stdout || error.message || '';
-      assert.ok(output.includes('Multiple tag columns found'), `Expected error message, got: ${output}`);
-    }
+    const output = execSync('node index.js parse test/fixtures/test-duplicate-columns.csv Tags', {
+      encoding: 'utf8'
+    });
+    
+    assert.ok(output.includes('Multiple tag columns found'), `Expected error message, got: ${output}`);
   });
 
   test('should error on non-existent file', async () => {
-    try {
-      execSync('node index.js parse nonexistent.csv Tags', {
-        encoding: 'utf8'
-      });
-      assert.fail('Should have thrown error');
-    } catch (error) {
-      const output = error.stdout || error.message || '';
-      assert.ok(output.includes('not found'), `Expected 'not found' in output, got: ${output}`);
-    }
+    const output = execSync('node index.js parse nonexistent.csv Tags', {
+      encoding: 'utf8'
+    });
+    
+    assert.ok(output.includes('not found'), `Expected 'not found' in output, got: ${output}`);
   });
 });
 
@@ -153,7 +156,7 @@ describe('Contact CSV Parser - Diff Command', () => {
     assert.ok(output.includes('Diff Summary'));
     assert.ok(output.includes('New Records: 1')); // Eve
     assert.ok(output.includes('Changed Records: 2')); // Bob's email changed, Charlie's tag changed
-    assert.ok(await fileExists('output/test-basic/diff/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/diff/summary.log'));
   });
 
   test('should create diff files organized by tags', async () => {
@@ -162,8 +165,8 @@ describe('Contact CSV Parser - Diff Command', () => {
       { shell: '/bin/bash' }
     );
 
-    assert.ok(await fileExists('output/test-basic/diff/customer.csv'));
-    assert.ok(await fileExists('output/test-basic/diff/prospect.csv'));
+    assert.ok(await fileExists('output-test/test-basic/diff/customer.csv'));
+    assert.ok(await fileExists('output-test/test-basic/diff/prospect.csv'));
   });
 
   test('should handle no differences gracefully', async () => {
@@ -191,7 +194,7 @@ describe('Contact CSV Parser - Diff Command', () => {
       { shell: '/bin/bash' }
     );
 
-    const backups = await findBackupFolders('output/test-basic/diff');
+    const backups = await findBackupFolders('output-test/test-basic/diff');
     assert.ok(backups.length > 0, 'Should create backup folder in diff directory');
   });
 });
@@ -225,15 +228,11 @@ describe('Contact CSV Parser - Headers Command', () => {
   });
 
   test('should handle non-existent file', async () => {
-    try {
-      execSync('node index.js headers nonexistent.csv', {
-        encoding: 'utf8'
-      });
-      assert.fail('Should have thrown error');
-    } catch (error) {
-      const output = error.stdout || error.message || '';
-      assert.ok(output.includes('not found'), `Expected 'not found' in output, got: ${output}`);
-    }
+    const output = execSync('node index.js headers nonexistent.csv', {
+      encoding: 'utf8'
+    });
+    
+    assert.ok(output.includes('not found'), `Expected 'not found' in output, got: ${output}`);
   });
 });
 
@@ -270,8 +269,8 @@ describe('Contact CSV Parser - Integration Tests', () => {
 
   test('should handle full workflow: parse, diff, and verify output', async () => {
     // Parse original file
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
-    const initialFileCount = await countFiles('output/test-basic');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
+    const initialFileCount = await countFiles('output-test/test-basic');
     assert.ok(initialFileCount >= 4, 'Should create at least 4 files');
 
     // Run diff
@@ -279,19 +278,19 @@ describe('Contact CSV Parser - Integration Tests', () => {
       'echo "y" | node index.js diff test/fixtures/test-basic.csv test/fixtures/test-basic-updated.csv',
       { shell: '/bin/bash' }
     );
-    assert.ok(await fileExists('output/test-basic/diff/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/diff/summary.log'));
 
     // Verify both directories exist
-    assert.ok(await fileExists('output/test-basic/summary.log'));
-    assert.ok(await fileExists('output/test-basic/diff/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/diff/summary.log'));
   });
 
   test('should preserve all CSV columns in output files', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const customerRecords = await readCSV('output/test-basic/customer.csv');
+    const customerRecords = await readCSV('output-test/test-basic/customer.csv');
     const originalHeaders = await readCSVHeaders('test/fixtures/test-basic.csv');
-    const outputHeaders = await readCSVHeaders('output/test-basic/customer.csv');
+    const outputHeaders = await readCSVHeaders('output-test/test-basic/customer.csv');
 
     assert.deepStrictEqual(outputHeaders, originalHeaders, 'Should preserve all columns');
   });
@@ -302,10 +301,10 @@ describe('Contact CSV Parser - Integration Tests', () => {
     });
 
     assert.ok(output.includes('Parse Summary'));
-    assert.ok(await fileExists('output/sample-contacts/customer.csv'));
-    assert.ok(await fileExists('output/sample-contacts/newsletter.csv'));
-    assert.ok(await fileExists('output/sample-contacts/prospect.csv'));
-    assert.ok(await fileExists('output/sample-contacts/vip.csv'));
+    assert.ok(await fileExists('output-test/sample-contacts/customer.csv'));
+    assert.ok(await fileExists('output-test/sample-contacts/newsletter.csv'));
+    assert.ok(await fileExists('output-test/sample-contacts/prospect.csv'));
+    assert.ok(await fileExists('output-test/sample-contacts/vip.csv'));
   });
 });
 

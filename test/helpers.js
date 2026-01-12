@@ -4,8 +4,21 @@ const csv = require('csv-parser');
 const fsSync = require('fs');
 
 // Test output directories
-const TEST_OUTPUT_DIR = path.join(__dirname, '..', 'output');
+const TEST_OUTPUT_DIR = path.join(__dirname, '..', 'output-test');
 const TEST_TEMP_DIR = path.join(__dirname, 'temp');
+
+// Set environment variable for tests to use different output directory
+process.env.TEST_OUTPUT_DIR = TEST_OUTPUT_DIR;
+
+/**
+ * Get test environment for execSync
+ */
+function getTestEnv() {
+  return {
+    ...process.env,
+    TEST_OUTPUT_DIR: TEST_OUTPUT_DIR
+  };
+}
 
 /**
  * Clean up test output directories
@@ -133,6 +146,7 @@ async function findBackupFolders(dirPath) {
 module.exports = {
   TEST_OUTPUT_DIR,
   TEST_TEMP_DIR,
+  getTestEnv,
   cleanTestOutput,
   cleanTestTemp,
   ensureTestTemp,

@@ -7,6 +7,9 @@ const csv = require('csv-parser');
 const { createObjectCsvWriter } = require('csv-writer');
 const { select, input, confirm } = require('@inquirer/prompts');
 
+// Output directory configuration (can be overridden for testing)
+const OUTPUT_BASE = process.env.TEST_OUTPUT_DIR || 'output';
+
 // Graceful exit handling
 process.on('SIGINT', () => {
   console.log('\nOperation cancelled by user.');
@@ -140,6 +143,14 @@ async function parseCommand(csvFile, tagColumn) {
   
   const headers = await readCSVHeaders(csvFile);
   
+  // Check for duplicate tag columns with different casing
+  const tagLower = tagColumn ? tagColumn.toLowerCase() : 'tags';
+  const matchingColumns = headers.filter(h => h.toLowerCase() === tagLower);
+  if (matchingColumns.length > 1) {
+    console.log(`Error: Multiple tag columns found with different casing: ${matchingColumns.join(', ')}`);
+    return;
+  }
+  
   if (!tagColumn) {
     tagColumn = await selectTagColumn(headers);
   } else if (!headers.includes(tagColumn)) {
@@ -149,7 +160,7 @@ async function parseCommand(csvFile, tagColumn) {
   
   const records = await readCSVRecords(csvFile);
   
-  const outputDir = path.join('output', path.parse(csvFile).name);
+  const outputDir = path.join(OUTPUT_BASE, path.parse(csvFile).name);
   await fs.mkdir(outputDir, { recursive: true });
   await backupDirectory(outputDir);
   
@@ -291,7 +302,7 @@ async function diffCommand(baseFile, updatedFile) {
     return;
   }
   
-  const outputDir = path.join('output', path.parse(baseFile).name, 'diff');
+  const outputDir = path.join(OUTPUT_BASE, path.parse(baseFile).name, 'diff');
   await fs.mkdir(outputDir, { recursive: true });
   await backupDirectory(outputDir);
   
@@ -415,9 +426,7 @@ async function findBackupFolders(dirPath) {
 }
 
 async function clearCommand(csvFile) {
-  const outputBase = 'output';
-  
-  if (!fsSync.existsSync(outputBase)) {
+  if (!fsSync.existsSync(OUTPUT_BASE)) {
     console.log('No output directory found.');
     return;
   }
@@ -425,17 +434,17 @@ async function clearCommand(csvFile) {
   let targetDir;
   
   if (csvFile) {
-    targetDir = path.join(outputBase, path.parse(csvFile).name);
+    targetDir = path.join(OUTPUT_BASE, path.parse(csvFile).name);
     if (!fsSync.existsSync(targetDir)) {
       console.log(`No output directory found for '${csvFile}'.`);
       return;
     }
   } else {
-    const outputDirs = await fs.readdir(outputBase);
+    const outputDirs = await fs.readdir(OUTPUT_BASE);
     const validDirs = [];
     
     for (const dir of outputDirs) {
-      const fullPath = path.join(outputBase, dir);
+      const fullPath = path.join(OUTPUT_BASE, dir);
       const stat = await fs.stat(fullPath);
       if (stat.isDirectory()) {
         validDirs.push(dir);
@@ -449,7 +458,7 @@ async function clearCommand(csvFile) {
     
     targetDir = await select({
       message: 'Select output directory to clear:',
-      choices: validDirs.map(d => ({ value: path.join(outputBase, d), name: d })),
+      choices: validDirs.map(d => ({ value: path.join(OUTPUT_BASE, d), name: d })),
       loop: false
     });
   }

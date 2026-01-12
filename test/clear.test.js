@@ -7,15 +7,22 @@ const {
   cleanTestOutput,
   cleanTestTemp,
   fileExists,
-  findBackupFolders
+  findBackupFolders,
+  getTestEnv
 } = require('./helpers');
+
+// Test exec options with environment
+const testExecOptions = {
+  encoding: 'utf8',
+  env: getTestEnv()
+};
 
 describe('Contact CSV Parser - Clear Command', () => {
   beforeEach(async () => {
     await cleanTestOutput();
     await cleanTestTemp();
     // Create some test output
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     // Small delay to ensure different timestamp
     await new Promise(resolve => setTimeout(resolve, 100));
     execSync('node index.js parse test/fixtures/test-basic.csv Tags'); // Creates backup
@@ -26,15 +33,15 @@ describe('Contact CSV Parser - Clear Command', () => {
   });
 
   test('should list backup folders', async () => {
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     assert.ok(backups.length > 0, 'Should have backup folders from setup');
   });
 
   test('should verify output directory structure exists', async () => {
-    assert.ok(await fileExists('output/test-basic/customer.csv'));
-    assert.ok(await fileExists('output/test-basic/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/customer.csv'));
+    assert.ok(await fileExists('output-test/test-basic/summary.log'));
     
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     assert.ok(backups.length > 0, 'Should have at least one backup folder');
   });
 
@@ -53,7 +60,7 @@ describe('Contact CSV Parser - Clear Command', () => {
       { shell: '/bin/bash' }
     );
 
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     // Should find backups in both root and diff directories
     // At minimum: 1 from initial parse + 1 from diff
     assert.ok(backups.length >= 1, `Should find at least one backup folder, found ${backups.length}`);
@@ -66,7 +73,7 @@ describe('Contact CSV Parser - Clear Command', () => {
   });
 
   test('should identify backup folders by name pattern', async () => {
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     
     for (const backup of backups) {
       assert.ok(backup.includes('backup_'), 'All folders should start with backup_');
@@ -86,21 +93,21 @@ describe('Contact CSV Parser - File Management', () => {
   });
 
   test('should create nested directory structure', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     execSync(
       'echo "y" | node index.js diff test/fixtures/test-basic.csv test/fixtures/test-basic-updated.csv',
       { shell: '/bin/bash' }
     );
 
-    assert.ok(await fileExists('output/test-basic/summary.log'));
-    assert.ok(await fileExists('output/test-basic/diff/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/summary.log'));
+    assert.ok(await fileExists('output-test/test-basic/diff/summary.log'));
   });
 
   test('should maintain separate backups for parse and diff', async () => {
     // First parse with backup
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     await new Promise(resolve => setTimeout(resolve, 100));
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
     // First diff with backup
     execSync(
@@ -113,7 +120,7 @@ describe('Contact CSV Parser - File Management', () => {
       { shell: '/bin/bash' }
     );
 
-    const parseBackups = await findBackupFolders('output/test-basic');
+    const parseBackups = await findBackupFolders('output-test/test-basic');
     const rootBackups = parseBackups.filter(b => !b.includes('diff'));
     const diffBackups = parseBackups.filter(b => b.includes('diff'));
 
@@ -123,12 +130,12 @@ describe('Contact CSV Parser - File Management', () => {
 
   test('should create output directory if it does not exist', async () => {
     await cleanTestOutput();
-    assert.ok(!await fileExists('output'), 'Output should not exist initially');
+    assert.ok(!await fileExists('output-test'), 'Output should not exist initially');
 
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    assert.ok(await fileExists('output'), 'Output directory should be created');
-    assert.ok(await fileExists('output/test-basic'), 'Subdirectory should be created');
+    assert.ok(await fileExists('output-test'), 'Output directory should be created');
+    assert.ok(await fileExists('output-test/test-basic'), 'Subdirectory should be created');
   });
 });
 
@@ -143,11 +150,11 @@ describe('Contact CSV Parser - Backup Timestamp Format', () => {
   });
 
   test('should create backups with ISO timestamp in name', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     await new Promise(resolve => setTimeout(resolve, 100));
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     assert.ok(backups.length > 0);
 
     const backupName = path.basename(backups[0]);
@@ -157,16 +164,16 @@ describe('Contact CSV Parser - Backup Timestamp Format', () => {
   });
 
   test('should create unique backup folders for multiple runs', async () => {
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     await new Promise(resolve => setTimeout(resolve, 100));
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
     
     // Small delay to ensure different timestamp
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    execSync('node index.js parse test/fixtures/test-basic.csv Tags');
+    execSync('node index.js parse test/fixtures/test-basic.csv Tags', testExecOptions);
 
-    const backups = await findBackupFolders('output/test-basic');
+    const backups = await findBackupFolders('output-test/test-basic');
     assert.ok(backups.length >= 1, 'Should have multiple backup folders');
 
     // Check all backup names are unique
