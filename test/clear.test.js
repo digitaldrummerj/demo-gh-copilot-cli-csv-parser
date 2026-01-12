@@ -72,10 +72,7 @@ describe('Clear Command', () => {
 });
 
 describe('Contact CSV Parser - File Management', () => {
-  beforeEach(async () => {
-    await setupTest();
-    await cleanTestTemp();
-  });
+  beforeEach(setupTest);
 
   afterEach(teardownTest);
 
@@ -127,10 +124,7 @@ describe('Contact CSV Parser - File Management', () => {
 });
 
 describe('Contact CSV Parser - Backup Timestamp Format', () => {
-  beforeEach(async () => {
-    await setupTest();
-    await cleanTestTemp();
-  });
+  beforeEach(setupTest);
 
   afterEach(teardownTest);
 
