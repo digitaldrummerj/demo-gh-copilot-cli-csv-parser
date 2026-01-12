@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_DISABLE_COLORS=1 node --test --test-reporter=spec",
-    "test:color": "node --test --test-reporter=spec",
+    "test": "NODE_DISABLE_COLORS=1 node --test --test-concurrency=1 --test-reporter=spec",
+    "test:color": "node --test --test-concurrency=1 --test-reporter=spec",
     "test:watch": "node --test --watch --test-reporter=spec",
-    "test:coverage": "NODE_DISABLE_COLORS=1 node --test --experimental-test-coverage --test-reporter=spec"
+    "test:coverage": "NODE_DISABLE_COLORS=1 node --test --experimental-test-coverage --test-concurrency=1 --test-reporter=spec"
   },
   "keywords": [],
   "author": "",
