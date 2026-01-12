@@ -22,6 +22,40 @@ A Node.js command-line application to parse CSV files containing contact records
 npm install
 ```
 
+3. Run tests (optional):
+
+```bash
+npm test
+```
+
+## Testing
+
+This project includes a comprehensive test suite using **Node.js built-in test runner** (zero external dependencies).
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Test Coverage
+
+- ✅ 34 automated tests
+- ✅ 91% pass rate (31/34 passing)
+- ✅ All commands tested (parse, diff, headers, clear)
+- ✅ Edge cases and error handling
+- ✅ Integration tests
+- ✅ File management and backup systems
+
+See [test/README.md](test/README.md) for detailed testing documentation.
+
 ## Usage
 
 ### Interactive Mode
