@@ -1,0 +1,6 @@
+ID,Name,Email,Tags
+1,Alice,alice@example.com,customer
+2,Bob,bob.new@example.com,"customer,vip"
+3,Charlie,charlie@example.com,customer
+4,Diana,diana@example.com,
+5,Eve,eve@example.com,prospect

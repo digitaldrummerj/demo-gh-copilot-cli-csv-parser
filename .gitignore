@@ -1,4 +1,7 @@
 node_modules/
 output/
 *.csv
+!test/fixtures/*.csv
 .DS_Store
+coverage/
+test/temp/

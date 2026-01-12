@@ -32,13 +32,13 @@ function getTimestamp() {
 
 async function readCSVHeaders(filePath) {
   return new Promise((resolve, reject) => {
-    const headers = [];
+    let headers = [];
     fsSync.createReadStream(filePath)
       .pipe(csv())
       .on('headers', (headerList) => {
-        headers.push(...headerList);
+        headers = headerList;
+        resolve(headers);
       })
-      .on('end', () => resolve(headers))
       .on('error', reject);
   });
 }
