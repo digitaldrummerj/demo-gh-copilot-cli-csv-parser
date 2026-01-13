@@ -1,0 +1,23 @@
+ID,Name,Email,Phone,Tags,Company
+1,John Doe,john.doe@example.com,555-0101,customer,Acme Corp
+2,Jane Smith,jane.smith@newemail.com,555-0102,"customer,newsletter,vip",Tech Solutions
+3,Bob Johnson,bob.johnson@example.com,555-0103,customer,Innovation Inc
+4,Alice Williams,alice.williams@example.com,555-0104,"customer,newsletter,vip",Global Enterprises
+5,Charlie Brown,charlie.brown@example.com,555-0105,newsletter,StartupCo
+6,Diana Prince,diana.prince@example.com,555-0106,vip,Wonder Corp
+7,Eve Adams,eve.adams@example.com,555-0107,"prospect,newsletter",Future Tech
+8,Frank Miller,frank.miller@example.com,555-0108,customer,Metro Industries
+9,Grace Lee,grace.lee@example.com,555-0109,prospect,Independent
+10,Henry Ford,henry.ford@example.com,555-0110,"customer,newsletter",Auto Corp
+11,Ivy Chen,ivy.chen@example.com,555-0111,customer,Digital Solutions
+12,Jack Wilson,jack.wilson@example.com,555-0112,newsletter,Cloud Systems
+13,Kelly Martinez,kelly.martinez@example.com,555-0113,customer,Retail Inc
+14,Leo Garcia,leo.garcia@example.com,555-0114,"prospect,newsletter",Data Corp
+15,Maya Patel,maya.patel@example.com,555-0115,vip,Elite Services
+16,Nathan Drake,nathan.drake@example.com,555-0116,customer,Adventure Ltd
+17,Olivia Taylor,olivia.taylor@example.com,555-0117,newsletter,Media Group
+18,Paul Anderson,paul.anderson@example.com,555-0118,,Self Employed
+19,Quinn Roberts,quinn.roberts@example.com,555-0119,"customer,vip",Premium Partners
+20,Rachel Green,rachel.green@example.com,555-0120,prospect,Fashion Co
+21,Sam Wilson,sam.wilson@example.com,555-0121,"customer,newsletter",New Company
+22,Tina Turner,tina.turner@example.com,555-0122,vip,Music Corp
