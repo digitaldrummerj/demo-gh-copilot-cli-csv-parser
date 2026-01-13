@@ -35,7 +35,7 @@ node --test --test-name-pattern="parse"
 
 ## Test Structure
 
-```
+```text
 test/
 ├── fixtures/                    # Test data files
 │   ├── test-basic.csv          # Basic test data
@@ -50,6 +50,7 @@ test/
 ## Test Coverage
 
 ### Parse Command Tests
+
 - ✅ Basic CSV parsing and file creation
 - ✅ Multiple tags per record
 - ✅ Untagged records handling
@@ -61,6 +62,7 @@ test/
 - ✅ Error handling for missing files
 
 ### Diff Command Tests
+
 - ✅ Identifying new records
 - ✅ Identifying changed records
 - ✅ Diff file organization by tags
@@ -68,17 +70,20 @@ test/
 - ✅ Backup creation for diff directory
 
 ### Headers Command Tests
+
 - ✅ Sorted header display
 - ✅ Sequential numbering
 - ✅ Error handling for missing files
 
 ### Clear Command Tests
+
 - ✅ Listing backup folders
 - ✅ Recursive backup folder search
 - ✅ Directory structure verification
 - ✅ Backup timestamp format validation
 
 ### Integration Tests
+
 - ✅ Full workflow: parse → diff → verify
 - ✅ Column preservation in output
 - ✅ Sample file processing
@@ -86,6 +91,7 @@ test/
 - ✅ Separate backups for parse/diff
 
 ### Edge Cases & Error Handling
+
 - ✅ Empty CSV files
 - ✅ CSV with only headers
 - ✅ Special characters in tags
@@ -108,21 +114,27 @@ The `test/helpers.js` module provides reusable functions:
 Test fixtures are stored in `test/fixtures/` and include:
 
 ### test-basic.csv
+
 Basic contact data with various tag combinations:
+
 - Single tag records
 - Multiple tag records
 - Untagged records
 
 ### test-basic-updated.csv
+
 Modified version of basic file for diff testing:
+
 - Changed records (email updates)
 - New records
 - Tag changes
 
 ### test-case-sensitive.csv
+
 Tests case-insensitive tag column detection with lowercase "tags"
 
 ### test-duplicate-columns.csv
+
 Tests error handling when both "Tags" and "tags" columns exist
 
 ## Writing New Tests
@@ -168,6 +180,7 @@ The test suite is designed to run in CI/CD environments:
 ## Coverage Goals
 
 Current coverage targets:
+
 - **Statements**: > 80%
 - **Branches**: > 75%
 - **Functions**: > 80%
@@ -176,20 +189,24 @@ Current coverage targets:
 ## Troubleshooting
 
 ### Tests fail with "ENOENT" errors
+
 - Ensure you're running from the project root directory
 - Check that test fixtures exist in `test/fixtures/`
 
 ### Tests timeout
+
 - Increase timeout in test configuration
 - Check for hanging promises or file handles
 
 ### Output directory conflicts
+
 - Tests clean up automatically with `beforeEach`
 - Manually run `rm -rf output` if needed
 
 ## Performance
 
 The test suite is optimized for speed:
+
 - Parallel test execution by default
 - Minimal file I/O operations
 - Cleanup only when necessary
@@ -200,6 +217,7 @@ Average test execution time: **< 5 seconds** for full suite
 ## Future Improvements
 
 Potential additions:
+
 - Performance benchmarks
 - Memory usage tests
 - Concurrent operation tests
