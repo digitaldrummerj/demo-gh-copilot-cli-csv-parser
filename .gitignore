@@ -2,6 +2,7 @@ node_modules/
 output/
 output-test/
 *.csv
+!sample-csv/*.csv
 !test/fixtures/*.csv
 .DS_Store
 coverage/
