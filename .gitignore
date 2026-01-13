@@ -7,3 +7,7 @@ output-test/
 .DS_Store
 coverage/
 test/temp/
+
+# Session files (keep sanitized version only)
+session.md
+**/session.md
