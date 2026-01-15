@@ -17,7 +17,7 @@ process.on('SIGINT', () => {
 });
 
 process.on('unhandledRejection', (error) => {
-  if (error.message === 'User force closed the prompt') {
+  if (error.name === 'ExitPromptError' || error.message === 'User force closed the prompt with SIGINT') {
     console.log('\nOperation cancelled by user.');
     process.exit(0);
   }
@@ -541,8 +541,9 @@ async function main() {
         console.log('Available commands: parse, diff, headers, clear');
     }
   } catch (error) {
-    if (error.message === 'User force closed the prompt') {
+    if (error.name === 'ExitPromptError' || error.message === 'User force closed the prompt with SIGINT') {
       console.log('\nOperation cancelled by user.');
+      process.exit(0);
     } else {
       console.error(`Error: ${error.message}`);
     }
